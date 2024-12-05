@@ -12,7 +12,7 @@ int AmountSafePart1(IEnumerable<string> lines)
 
     foreach (var levels in map)
     {
-        if (!IsOrdered(levels) || HasInvalidLevels(levels))
+        if (!IsSafe(levels))
         {
             continue;
         }
@@ -22,14 +22,17 @@ int AmountSafePart1(IEnumerable<string> lines)
 
     return safe;
 }
+
+bool IsSafe(IEnumerable<int> levels) => IsOrdered(levels) && HasValidLevels(levels);
+
 bool IsOrdered(IEnumerable<int> levels)
 {
-    var levelArray = levels.ToArray(); // Avoid multiple enumeration
+    var levelArray = levels.ToArray();
     return levelArray.SequenceEqual(levelArray.Order()) ||
            levelArray.SequenceEqual(levelArray.OrderByDescending(x => x));
 }
 
-bool HasInvalidLevels(IEnumerable<int> levels)
+bool HasValidLevels(IEnumerable<int> levels)
 {
     var levelArray = levels.ToArray();
     for (int i = 1; i < levelArray.Length; i++)
@@ -37,10 +40,10 @@ bool HasInvalidLevels(IEnumerable<int> levels)
         int difference = Math.Abs(levelArray[i] - levelArray[i - 1]);
         if (difference > 3 || difference == 0)
         {
-            return true;
+            return false;
         }
     }
-    return false;
+    return true;
 }
 
 int AmountSafePart2(IEnumerable<string> lines)
@@ -50,14 +53,21 @@ int AmountSafePart2(IEnumerable<string> lines)
 
     foreach (var levels in map)
     {
-        for (int i = 0; i < levels.Count(); i++) {
-            var checkLevels = levels;
-            if (!IsOrdered(levels) || HasInvalidLevels(levels))
+        if (!IsSafe(levels))
+        {
+            for (int i = 0; i <= levels.Count(); i++)
             {
-                continue;
+                var considerLevel = levels.Where((_, index) => index != i);
+                if (IsSafe(considerLevel))
+                {
+                    safe++;
+                    break;
+                }
             }
+        } else
+        {
+            safe++;
         }
-        safe++;
     }
 
     return safe;
